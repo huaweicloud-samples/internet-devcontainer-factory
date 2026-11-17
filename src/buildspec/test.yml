@@ -1,0 +1,19 @@
+# CodeArts 构建 YAML —— 镜像冒烟测试
+# 拉取多架构镜像并启动 Dev Container，验证镜像可正常拉起。
+version: 2.0.0
+
+jobs:
+  build:
+    steps:
+      - name: "登录并拉取镜像"
+        run: |
+          docker login "${SWR_ENDPOINT}" -u "${SWR_USER}" -p "${SWR_PASSWORD}"
+          IMAGE="${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}"
+          docker pull "${IMAGE}"
+          docker inspect "${IMAGE}"
+
+      - name: "冒烟测试（启动 Dev Container）"
+        run: |
+          npm install -g @devcontainers/cli
+          echo "{ \"image\": \"${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}\" }" > test.devcontainer.json
+          devcontainer up --workspace-folder . --override-config test.devcontainer.json --remote-env CI=1

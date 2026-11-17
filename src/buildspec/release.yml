@@ -1,0 +1,21 @@
+# CodeArts 构建 YAML —— 镜像发布（打版本与 latest 标签）
+# 将验证通过的 dev 镜像重新打上时间戳版本号与 latest 标签后推送至 SWR。
+version: 2.0.0
+
+jobs:
+  build:
+    steps:
+      - name: "登录容器镜像仓库（SWR）"
+        run: |
+          docker login "${SWR_ENDPOINT}" -u "${SWR_USER}" -p "${SWR_PASSWORD}"
+
+      - name: "发布版本与 latest 标签"
+        run: |
+          SRC="${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}"
+          VERSION="$(date +%Y%m%d-%H%M%S)"
+          docker pull "${SRC}"
+          docker tag "${SRC}" "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:${VERSION}"
+          docker tag "${SRC}" "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:latest"
+          docker push "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:${VERSION}"
+          docker push "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:latest"
+          echo "已发布版本 ${VERSION} 与 latest"

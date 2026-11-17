@@ -1,0 +1,31 @@
+# CodeArts 构建 YAML —— 镜像单架构构建
+# 由 infra/main.tf 中 CodeArts 流水线的 official_devcloud_build 任务引用。
+# 建议为 amd64 / arm64 各配置一条并行构建任务，再经 manifest.yml 合并为多架构清单。
+version: 2.0.0
+
+jobs:
+  build:
+    steps:
+      - name: "安装依赖"
+        run: |
+          npm install -g @devcontainers/cli
+          docker --version
+          node --version
+
+      - name: "登录容器镜像仓库（SWR）"
+        run: |
+          # 凭据通过 CodeArts 构建参数传入，仓库内不写入明文。
+          #   SWR_ENDPOINT 形如 swr.cn-north-4.myhuaweicloud.com
+          #   SWR_USER     形如 <组织名>@<账号名> 或访问密钥 ID
+          #   SWR_PASSWORD 为 SWR 登录密码（控制台「我的凭证」获取）
+          docker login "${SWR_ENDPOINT}" -u "${SWR_USER}" -p "${SWR_PASSWORD}"
+
+      - name: "构建并推送（单架构）"
+        run: |
+          # TARGET_ARCH 由构建参数注入：amd64 或 arm64
+          IMAGE="${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}-${TARGET_ARCH}"
+          echo "构建镜像：${IMAGE}"
+          devcontainer build \
+            --workspace-folder . \
+            --image-name "${IMAGE}" \
+            --push

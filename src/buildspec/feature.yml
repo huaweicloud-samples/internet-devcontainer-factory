@@ -1,0 +1,21 @@
+# CodeArts 构建 YAML —— Dev Container 特性发布
+# 将 devcontainer 特性（features）发布到 SWR 组织下的特性仓库。
+version: 2.0.0
+
+jobs:
+  build:
+    steps:
+      - name: "安装依赖"
+        run: |
+          npm install -g @devcontainers/cli
+
+      - name: "登录容器镜像仓库（SWR）"
+        run: |
+          docker login "${SWR_ENDPOINT}" -u "${SWR_USER}" -p "${SWR_PASSWORD}"
+
+      - name: "发布 Dev Container 特性"
+        run: |
+          devcontainer features publish \
+            --registry "${SWR_ENDPOINT}" \
+            --namespace "${SWR_ORG}" \
+            .
