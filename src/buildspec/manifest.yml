@@ -1,0 +1,19 @@
+# CodeArts 构建 YAML —— 合并多架构镜像清单
+# 在 amd64 / arm64 两条构建任务完成后执行，生成统一的多架构镜像标签。
+version: 2.0.0
+
+jobs:
+  build:
+    steps:
+      - name: "登录容器镜像仓库（SWR）"
+        run: |
+          docker login "${SWR_ENDPOINT}" -u "${SWR_USER}" -p "${SWR_PASSWORD}"
+
+      - name: "创建并推送多架构清单"
+        run: |
+          MANIFEST="${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}"
+          docker manifest create "${MANIFEST}" \
+            "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}-amd64" \
+            "${SWR_ENDPOINT}/${SWR_ORG}/${SWR_REPO}:dev-${IMAGE_TAG}-arm64"
+          docker manifest push "${MANIFEST}"
+          docker manifest inspect "${MANIFEST}"

@@ -1,0 +1,14 @@
+# 示例变量文件（复制为 terraform.tfvars 后填写）
+region                  = "cn-north-4"
+project_name            = "devcontainer-factory"
+namespace               = "devcontainers"
+# 预先在 IAM 控制台创建的委托名称（详见 docs/deployment-guide.md）：
+# 委托类型选「云服务」，勾选 FunctionGraph 与 CodeArts 构建，并授予
+# SWR Administrator / OBS OperateAccess / KMS DecryptAccess 权限
+build_agency_name       = "<预先创建的 IAM 委托名称>"
+codearts_project_id     = "<CodeArts 项目 ID>"
+obs_source_bucket_name  = "devcontainer-factory-source"
+obs_artifact_bucket_name = "devcontainer-factory-artifacts"
+swr_organization        = "devcontainers"
+images                  = ["base", "base-extended"]
+features                = ["git-cli", "docker-cli"]
